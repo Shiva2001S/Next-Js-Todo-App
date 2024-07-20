@@ -1,95 +1,55 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import React, { Suspense } from 'react'
+import './styles/app.scss';
+// since we are exporting default addTodoForm so we can choose any name so we are impoting it as Form
+import Form from './addTodoForm';
+import { cookies } from 'next/headers';
 
-export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+import Todos from './Todos';
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+const fetchTodo = async () => {
+  try {
+    const token = cookies().get('todo')?.value;
+    const res = await fetch(`${process.env.URL}/api/mytask`, {
+      cache: 'no-cache',
+      headers : {
+        'Content-Type' : 'application/json',
+        'cookie' : `${token}`,
+      },   
+    });
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+    console.log('res of page.js ', res);
+    console.log('token of page.js ', token);
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
+    // const data = res;
+    const data = await res.json();
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
+    console.log('data of page.js ', data);
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+    if (!data.success) {
+      console.log("hi i am in if");
+      return [];
+    }
+
+    return data.tasks;
+  } catch (error) {
+    console.log('error of page.js ', error);
+    return [];
+  }
 }
+
+const page = async () => {
+  // const tasks = data;
+  // const tasks = await fetchTodo();
+  // console.log('tasks of page.js ', tasks);
+
+  return (
+    <div className='container'>
+      <Form />
+      <Suspense fallback={<div>loading...</div>}>
+      <Todos />
+      </Suspense>
+    </div>
+  )
+}
+
+export default page
