@@ -10,7 +10,7 @@ const Todos = async() => {
     const token = cookies().get('todo')?.value;
     if (!token) return redirect('/login');
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = await jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded._id);
     const tasks = await Task.find({ user: user._id });
 
