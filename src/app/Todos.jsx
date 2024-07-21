@@ -5,10 +5,13 @@ import { Task } from './models/task';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { TodoItem } from './components/ServerComponent';
+import { connectDB } from './utils/features';
 
 const Todos = async() => {
     const token = cookies().get('todo')?.value;
     if (!token) return redirect('/login');
+
+    await connectDB();
 
     const decoded = await jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded._id);
